@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>こころの魔人</title>
+<style>
+:root{color-scheme:dark;--bg:#0c0a12;--fg:#e9e4f2;--dim:#7d7690;--line:#2a2438;--red:#ff2a3c;--acc:#9d8cd6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;overflow-x:hidden}
+#app{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
+#frame{width:min(560px,100%);border:1px solid var(--line);border-radius:4px;padding:40px 28px 32px;position:relative;background:#110e1a;text-align:center;min-height:300px;display:flex;flex-direction:column;justify-content:center}
+#t{font-size:1.25rem;line-height:2;min-height:3.5em;white-space:pre-wrap;letter-spacing:.06em}
+#t.red{color:var(--red)}
+#t.shake{animation:sh .08s infinite}
+#t.white{color:#fff;opacity:0;transition:opacity 5s ease-in}
+#t.white.on{opacity:1}
+#b{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:28px;min-height:48px}
+button{font:inherit;font-size:1rem;color:var(--fg);background:transparent;border:1px solid var(--acc);border-radius:2px;padding:10px 20px;cursor:pointer;letter-spacing:.08em;transition:background .15s}
+button:hover,button:focus-visible{background:#2a2440;outline:2px solid var(--acc);outline-offset:2px}
+button.red{color:var(--red);border-color:var(--red)}
+button.red:hover{background:#3a1018}
+input{font:inherit;font-size:1.1rem;color:var(--fg);background:#0c0a12;border:1px solid var(--acc);padding:10px 14px;width:min(280px,100%);text-align:center}
+#fl{position:fixed;inset:0;display:none;align-items:center;justify-content:center;font-size:1.5rem;color:var(--red);pointer-events:none;z-index:5;text-shadow:0 0 12px #f00;animation:fi .12s}
+.spillw{position:relative;height:130px}
+.inp{display:flex;flex-direction:column;align-items:center;gap:12px;border:1px dashed var(--dim);padding:20px 24px;width:100%}
+.sys{font-family:system-ui,"Hiragino Sans","Yu Gothic",sans-serif;font-size:.9rem;color:var(--dim);letter-spacing:.04em}
+.spill{position:absolute;left:-30px;right:-30px;top:-70px;color:var(--red);font-size:1.3rem;line-height:1.5;z-index:3;pointer-events:none}
+.spill div{white-space:nowrap}
+#res{text-align:left;font-size:.95rem;line-height:1.7}
+#res h2{text-align:center;font-weight:400;font-size:1.3rem;margin:0 0 4px}
+#res .end{text-align:center;color:var(--dim);margin-bottom:18px}
+#res dl{margin:0;border-top:1px solid var(--line)}
+#res dt{color:var(--dim);margin-top:12px;font-size:.88rem}
+#res dd{margin:0 0 0 0;padding-bottom:10px;border-bottom:1px solid var(--line)}
+#res dd.r{color:var(--red)}
+@keyframes sh{0%{transform:translate(2px,-1px)}50%{transform:translate(-2px,1px)}100%{transform:translate(1px,2px)}}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){#t.shake{animation:none}#fl{animation:none}}
+</style>
+</head>
+<body>
+<div id="app"><div id="frame"><div id="t"></div><div id="b"></div></div></div>
+<div id="fl"></div>
+<script>
+const $=s=>document.querySelector(s),T=$('#t'),B=$('#b'),F=$('#frame'),FL=$('#fl');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let log=[],emo='';
+async function type(text,ms=48){T.textContent='';for(const c of text){T.textContent+=c;await sleep(ms)}}
+function btns(list,red){B.innerHTML='';return new Promise(res=>{list.forEach(l=>{const b=document.createElement('button');b.textContent=l;if(red===true||(Array.isArray(red)&&red.includes(l)))b.className='red';b.onclick=()=>{B.innerHTML='';res(l)};B.appendChild(b)});B.firstChild&&B.firstChild.focus()})}
+async function msg(text,o={}){T.className=o.red?'red':'';await type(text,o.ms);await btns(['つづける'])}
+async function ask(text,ch,o={}){T.className=o.red?'red':'';await type(text);const a=await btns(ch,o.redBtn);log.push([o.log||text,a,o.red||o.redBtn===true||(Array.isArray(o.redBtn)&&o.redBtn.includes(a))]);return a}
+async function flash(text){B.innerHTML='';T.className='red';T.textContent=text;await sleep(280);T.textContent='';await sleep(200)}
+async function spill(){
+  T.className='';T.innerHTML='';
+  const w=document.createElement('div');w.className='spillw';
+  const s=document.createElement('div');s.className='spill';
+  for(let i=0;i<10;i++){const d=document.createElement('div');d.textContent='「夢融」がいます';d.style.transform='translateX('+((i%3-1)*18)+'px) scale('+(1+i*.04)+')';s.appendChild(d)}
+  w.appendChild(s);T.appendChild(w);
+  await sleep(1100);T.innerHTML=''}
+async function rush(){
+  T.className='red shake';
+  for(const l of ['え？','あ','なんで','やめて███████████████','████の████！','███','████']){T.textContent=l;await sleep(380)}
+  T.className='white on';T.textContent='';await sleep(1000);T.textContent='さようなら';await sleep(1200)}
+async function end(n,txt){
+  B.remove();T.remove();
+  const names={1:'end1',2:'end2',3:'end3',4:'end4',5:'end5'};
+  const r=document.createElement('div');r.id='res';
+  let h='<h2>結果</h2><div class="end">'+names[n]+'</div><p style="text-align:center;margin:0 0 18px">'+txt+'</p><dl>';
+  log.forEach(([q,a,red])=>{h+='<dt>'+q+'</dt><dd'+(red?' class="r"':'')+'>'+a+'</dd>'});
+  if(emo)h+='<dt>あなたの思い浮かべた感情</dt><dd>'+emo.replace(/[<>&]/g,'')+'</dd>';
+  h+='</dl><div style="text-align:center;margin-top:22px"><button onclick="location.reload()">もう一度</button></div>';
+  r.innerHTML=h;F.appendChild(r)}
+async function game(){
+  const YN3=['はい','いいえ','どちらともいえない'];
+  await msg('こんにちは！　私はあなたのこころの魔人です');
+  await msg('「感情」を一つ思い浮かべてください。\n私がそれを当ててみせましょう。');
+  await ask('思い浮かべましたか？',['はい']);
+  const q1=await ask('問１　それはポジティブな感情といえますか？',YN3);
+  await ask('問２　あなたはその感情をよく抱きますか？',YN3);
+  await ask('問３　その感情はあなたの決断を変えるものですか？',YN3);
+  await flash('「夢融」が近づいています');
+  const q4=await ask('問４　あなたはその感情を許せますか？',['はい','いいえ']);
+  await msg('では……');
+  await ask('問５　その感情の原因はあなたにあるでしょうか？',YN3);
+  await flash('「夢融」はすぐそこまで来ています');
+  const a6=await ask('問６　「夢融」はすぐそこまで来ていますか？',[...YN3,'来ていない'],{red:true});
+  if(a6==='来ていない')await flash('きてるよ');
+  await ask('問７　あなたはその感情をよく抱きますか？',['来ている','来ていない'],{redBtn:true});
+  await ask('問８　「夢融」がいます',['いる','いない']);
+  await spill();
+  await msg('わかりました');
+  await ask('あなたが思い浮かべた感情は「恐怖」だね',Array(8).fill('はい'),{log:'あなたが思い浮かべた感情は「恐怖」だね',redBtn:true});
+  log[log.length-1][1]='はい×8';
+  await msg('ほら、やっぱり');
+  await msg('私にはなんでもお見通しなの');
+  const a=await ask('もう「夢融」にぐちゃぐちゃにされないですむ',['よかった','違うよ'],{redBtn:['よかった']});
+  if(a==='よかった'){await rush();return end(1,'ああ、夢融がきてしまいましたね')}
+  await msg('え？');await msg('違う');
+  await ask('は？',['違うよ']);
+  await msg('何');await msg('来ちゃうんだってば');
+  T.className='';T.textContent='';
+  emo=await new Promise(res=>{B.innerHTML='';const i=document.createElement('input');i.maxLength=30;const b=document.createElement('button');b.textContent='決定';const go=()=>{const v=i.value.trim();if(v){B.innerHTML='';res(v)}};b.onclick=go;i.onkeydown=e=>{if(e.key==='Enter'&&!e.isComposing)go()};const lb=document.createElement('div');lb.className='sys';lb.textContent='あなたの思い浮かべた感情を入力してください';const pn=document.createElement('div');pn.className='inp';pn.append(lb,i,b);B.append(pn);i.focus()});
+  if(q1==='はい'){
+    for(const l of ['あれ？','いいの？','そっか'])await msg(l);
+    await msg('ありがとう');return q4==='はい'?end(2,'あなたの優しくて誠実な心によって、「夢融」は遠ざかりました'):end(3,'あなたの中の葛藤は、けして無駄ではありません')}
+  for(const l of ['そっか','そうだったんだね','よかった'])await msg(l);
+  await msg('ごめんね');q4==='はい'?end(4,'あなたが前を向く限り、「夢融」に吞まれることはありません'):end(5,'ただ、祝福がありますように')}
+game();
+</script>
+</body>
+</html>
